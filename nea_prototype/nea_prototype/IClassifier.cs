@@ -57,16 +57,17 @@ namespace nea_prototype
             { 13, 479001600 } 
         };
         private double lowIncGammaFnct;
-        private double ChiSquared(double[] fo, double[] fe, int v = 26 - 1)
+        private double ChiSquared(double[] fo, double[] fe, int v )
         {
             double chiSquared = 0;
             for (int i = 0; i < fo.Length; i++)
             {
                 chiSquared += Math.Pow( fo[i] - fe[i], 2) / fe[i];
             }
-            //Console.WriteLine("Chi: " + chiSquared);
+            Console.WriteLine("Chi: " + chiSquared);
             
-            return 1 - CDF(v, chiSquared);
+            //return 1 - CDF(v, chiSquared); Now want to return Chi squared value from here and find p-value outside in Classify() instead
+            return chiSquared;
         }
         private double CDF(int degFreedom, double chiSquared) //Cumulative Distribution Function -> this is the integral of the Probablility Density Function of the chi squared distribution
         {
@@ -87,18 +88,22 @@ namespace nea_prototype
             //Console.WriteLine("Lower: " + result);
             return result;
         }
-        //public (double[], double[]) CombineClasses(double[] fo, double[] fe)
-        //{
-        //    List<double[]> cols = new List<double[]>();
-        //    for (int i = 0; i < fo.Length; i++)
-        //    {
-        //        cols.Add(new double[] { fo[i], fe[i] });
-        //    }
-        //    while (fe.Min() < 5)
-        //    {
-                
-        //    }
-        //}
+        public (double[], double[]) CombineClasses(double[] fo, double[] fe)
+        {
+            List<double> lFo = fo.ToList();
+            List<double> lFe = fe.ToList();
+            while ((double)lFe.Min() < 5.0)
+            {
+                double minFe = lFe.Min();
+                double minFo = lFo[lFe.IndexOf(lFe.Min())];
+                lFo.RemoveAt(lFe.IndexOf(minFe));
+                lFe.Remove(minFe);
+                int addAt = lFe.IndexOf(lFe.Min());
+                lFe[addAt] += minFe;
+                lFo[addAt] += minFo;
+            }
+            return (lFo.ToArray(), lFe.ToArray());
+        }
         public double Classify(string text)
         {
             int n = text.Count(c => "abcdefghijklmnopqrstuvwxyz".Contains(char.ToLower(c)));
@@ -110,9 +115,10 @@ namespace nea_prototype
             {
                 observedFreqs[i] = text.Count(c => char.ToLower(c) == (char)('a' + i));
             }
-            int degFreedom = 25;
-            return ChiSquared(observedFreqs, expectedFreqs, degFreedom);
-            //return 1 - CDF(degFreedom, 14.61);
-        }
+            (double[] fo, double[] fe) = CombineClasses(observedFreqs, expectedFreqs);
+            int degFreedom = fo.Length - 1;
+            if (degFreedom == 0) throw new Exception("Text does not contain enough letters, so all classes were combined and there are 0 degrees of freedom");
+            return CDF(degFreedom, ChiSquared(fo, fe, degFreedom)); //This is NOT p-value this is probability that it is English -> p-value is 1-CDF()
+        } //But remember that this one should have a low threshold
     }
 }

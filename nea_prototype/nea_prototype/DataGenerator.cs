@@ -14,11 +14,12 @@ namespace nea_prototype
         {
             string[] dict = File.ReadAllLines(dictFilePath);
             string text = "";
-            for (int i = 0; i < length; i++)
+            do
             {
                 text += dict[random.Next(0, dict.Length)] + " ";
-            }
-            return text.Trim();
+            }while (text.Length < length);
+
+            return text.Substring(0,length).Trim();
         }
     }
 }
