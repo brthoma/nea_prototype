@@ -57,12 +57,12 @@ namespace nea_prototype
             { 13, 479001600 } 
         };
         private double lowIncGammaFnct;
-        private double ChiSquared(double[] fo, double[] fe, int v )
+        private double ChiSquared(double[] fo, double[] ed, int v, int n )
         {
             double chiSquared = 0;
             for (int i = 0; i < fo.Length; i++)
             {
-                chiSquared += Math.Pow( fo[i] - fe[i], 2) / fe[i];
+                chiSquared += Math.Pow(n*(fo[i] - ed[i]), 2) / (n*ed[i]);
             }
             Console.WriteLine("Chi: " + chiSquared);
             
@@ -104,6 +104,19 @@ namespace nea_prototype
             }
             return (lFo.ToArray(), lFe.ToArray());
         }
+        public (double[], double[]) DelClasses(double[] fo, double[] ed) //Try deleting any classes with fe < 1.1%
+        {
+            List<double> lFo = fo.ToList();
+            List<double> lEd = ed.ToList();
+            while ((double)lEd.Min() < 0.011)
+            {
+                double minFe = lEd.Min();
+                double minFo = lFo[lEd.IndexOf(lEd.Min())];
+                lFo.RemoveAt(lEd.IndexOf(minFe));
+                lEd.Remove(minFe);
+            }
+            return (lFo.ToArray(), lEd.ToArray());
+        }
         public double Classify(string text)
         {
             int n = text.Count(c => "abcdefghijklmnopqrstuvwxyz".Contains(char.ToLower(c)));
@@ -113,12 +126,12 @@ namespace nea_prototype
             double[] observedFreqs = new double[26];
             for (int i = 0; i < 26; i++)
             {
-                observedFreqs[i] = text.Count(c => char.ToLower(c) == (char)('a' + i));
+                observedFreqs[i] = (double) text.Count(c => char.ToLower(c) == (char)('a' + i)) / text.Length;
             }
-            (double[] fo, double[] fe) = CombineClasses(observedFreqs, expectedFreqs);
+            (double[] fo, double[] ed) = DelClasses(observedFreqs, expectedDistribution);
             int degFreedom = fo.Length - 1;
             if (degFreedom == 0) throw new Exception("Text does not contain enough letters, so all classes were combined and there are 0 degrees of freedom");
-            return CDF(degFreedom, ChiSquared(fo, fe, degFreedom)); //This is NOT p-value this is probability that it is English -> p-value is 1-CDF()
+            return 1 - CDF(degFreedom, ChiSquared(fo, ed, degFreedom, n)); //This is NOT p-value this is probability that it is English -> p-value is 1-CDF() nope apparently its the other way round now not really sure why but ok???
         } //But remember that this one should have a low threshold
     }
 }

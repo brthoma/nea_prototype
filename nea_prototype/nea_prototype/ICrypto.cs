@@ -8,6 +8,17 @@ namespace nea_prototype
 {
     public interface ICrypto
     {
-        string GetLikelyKey(string ciphertext);
+        IEnumerable<string> GetLikelyPlain(ICipher cipher, string ciphertext);
+    }
+
+    public class ROT13Cycle : ICrypto
+    {
+        public IEnumerable<string> GetLikelyPlain(ICipher rot13Cipher, string ciphertext)
+        {
+            for (int i = 0; i < 26; i++)
+            {
+                yield return rot13Cipher.Decrypt(ciphertext, new StrInt(i));
+            }
+        }
     }
 }
