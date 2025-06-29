@@ -56,13 +56,12 @@ namespace nea_prototype
             { 12.5, 136843365.5 }, 
             { 13, 479001600 } 
         };
-        private double lowIncGammaFnct;
-        private double ChiSquared(double[] fo, double[] ed, int v, int n )
+        private double ChiSquared(double[] fo, double[] fe, int v, int n )
         {
             double chiSquared = 0;
             for (int i = 0; i < fo.Length; i++)
             {
-                chiSquared += Math.Pow(n*(fo[i] - ed[i]), 2) / (n*ed[i]);
+                chiSquared += Math.Pow(fo[i] - fe[i], 2) / fe[i];
             }
             Console.WriteLine("Chi: " + chiSquared);
             
@@ -74,7 +73,7 @@ namespace nea_prototype
             //Console.WriteLine("Gamma: " + Γ[(double)degFreedom / 2]);
             return ɣ((double)degFreedom / 2, chiSquared / 2) / Γ[(double)degFreedom / 2];
         }
-        private double ɣ(double s, double x, int n = 10000000)
+        private double ɣ(double s, double x, int n = 100000)
         {
             double h = x / n;
             double result = 0;
@@ -88,11 +87,11 @@ namespace nea_prototype
             //Console.WriteLine("Lower: " + result);
             return result;
         }
-        public (double[], double[]) CombineClasses(double[] fo, double[] fe)
+        public (double[], double[]) CombineClasses(double[] fo, double[] fe, int n)
         {
             List<double> lFo = fo.ToList();
             List<double> lFe = fe.ToList();
-            while ((double)lFe.Min() < 5.0)
+            while ((double)lFe.Min() < 0.05 * n)
             {
                 double minFe = lFe.Min();
                 double minFo = lFo[lFe.IndexOf(lFe.Min())];
@@ -104,11 +103,11 @@ namespace nea_prototype
             }
             return (lFo.ToArray(), lFe.ToArray());
         }
-        public (double[], double[]) DelClasses(double[] fo, double[] ed) //Try deleting any classes with fe < 1.1%
+        public (double[], double[]) DelClasses(double[] fo, double[] ed, int n) //Try deleting any classes with exp distr < 1.1%
         {
             List<double> lFo = fo.ToList();
             List<double> lEd = ed.ToList();
-            while ((double)lEd.Min() < 0.011)
+            while ((double)lEd.Min() / n < 0.011)
             {
                 double minFe = lEd.Min();
                 double minFo = lFo[lEd.IndexOf(lEd.Min())];
@@ -122,16 +121,21 @@ namespace nea_prototype
             int n = text.Count(c => "abcdefghijklmnopqrstuvwxyz".Contains(char.ToLower(c)));
             double[] expectedDistribution = { 0.0804, 0.0148, 0.0334, 0.0382, 0.1249, 0.0240, 0.0187, 0.0505, 0.0757, 0.0016, 0.0054, 0.0407, 0.0251, 0.0723, 0.0764, 0.0214, 0.0012, 0.0628, 0.0651, 0.0928, 0.0273, 0.0105, 0.0168, 0.0023, 0.0166, 0.0009 };
             double[] expectedFreqs = new double[26];
-            for (int i = 0; i < expectedFreqs.Length; i++) expectedFreqs[i] = expectedDistribution[i] * n;
+            for (int i = 0; i < expectedFreqs.Length; i++) expectedFreqs[i] = expectedDistribution[i] * 100; // expected freq out of 100 letters
             double[] observedFreqs = new double[26];
             for (int i = 0; i < 26; i++)
             {
-                observedFreqs[i] = (double) text.Count(c => char.ToLower(c) == (char)('a' + i)) / text.Length;
+                observedFreqs[i] = (double) text.Count(c => char.ToLower(c) == (char)('a' + i)) * (100.0 / n);
             }
-            (double[] fo, double[] ed) = DelClasses(observedFreqs, expectedDistribution);
+            n = 100;
+            (double[] fo, double[] fe) = DelClasses(observedFreqs, expectedFreqs, n);
+            (double[] fo2, double[] fe2) = CombineClasses(observedFreqs, expectedFreqs, n);
             int degFreedom = fo.Length - 1;
             if (degFreedom == 0) throw new Exception("Text does not contain enough letters, so all classes were combined and there are 0 degrees of freedom");
-            return 1 - CDF(degFreedom, ChiSquared(fo, ed, degFreedom, n)); //This is NOT p-value this is probability that it is English -> p-value is 1-CDF() nope apparently its the other way round now not really sure why but ok???
+            Console.WriteLine("ORIGINAL: ");
+            Console.WriteLine(1 - CDF(degFreedom, ChiSquared(fo, fe, degFreedom, n)));
+            Console.WriteLine("DELETION: ");
+            return 1 - CDF(degFreedom, ChiSquared(fo, fe, degFreedom, n)); //This is NOT p-value this is probability that it is English -> p-value is 1-CDF() nope apparently its the other way round now not really sure why but ok???
         } //But remember that this one should have a low threshold
     }
 }

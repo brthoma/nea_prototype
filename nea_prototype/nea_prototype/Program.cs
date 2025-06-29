@@ -41,28 +41,29 @@ namespace nea_prototype
 
             ROT13Cycle rot13Cycle = new ROT13Cycle();
 
-            string plaintext = dataGenerator.Generate("EnglishDictionary.txt", 100, random);
+            string plaintext = dataGenerator.Generate("EnglishDictionary.txt", 1000, random);
             string ciphertext = rot13.Encrypt(plaintext, new StrInt(random.Next(26)));
 
             foreach (string maybePlaintext in rot13Cycle.GetLikelyPlain(rot13, ciphertext))
             {
                 Console.WriteLine(maybePlaintext);
                 Console.WriteLine(freqAnalysis.Classify(maybePlaintext));
+                Console.WriteLine();
             }
             Console.ReadKey();
 
-            while (true)
-            {
-                txt = dataGenerator.Generate("EnglishDictionary.txt", 100, random);
-                Console.WriteLine(txt);
-                Console.WriteLine(freqAnalysis.Classify(txt) * 100 + "%");
-                encr = rot13.Encrypt(txt, new StrInt(random.Next(1, 26)));
-                Console.WriteLine(encr);
-                Console.WriteLine(freqAnalysis.Classify(encr) * 100 + "%");
-                Console.ReadKey();
-            }
+            //while (true)
+            //{
+            //    txt = dataGenerator.Generate("EnglishDictionary.txt", 100, random);
+            //    Console.WriteLine(txt);
+            //    Console.WriteLine(freqAnalysis.Classify(txt) * 100 + "%");
+            //    encr = rot13.Encrypt(txt, new StrInt(random.Next(1, 26)));
+            //    Console.WriteLine(encr);
+            //    Console.WriteLine(freqAnalysis.Classify(encr) * 100 + "%");
+            //    Console.ReadKey();
+            //}
 
-            Console.ReadKey();
+            //Console.ReadKey();
 
         }
     }
