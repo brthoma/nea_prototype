@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
@@ -19,7 +20,7 @@ namespace nea_prototype
             int printable = 0;
             foreach (char c in text)
             {
-                if (! (char.IsWhiteSpace(c) || char.IsControl(c)) ) printable++;
+                if (! (char.IsControl(c) || char.IsSurrogate(c)) ) printable++;
             }
             double proportion = (printable / text.Length);
             return proportion;

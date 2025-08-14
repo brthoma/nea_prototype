@@ -22,7 +22,6 @@ namespace nea_prototype
         }
         public StrInt(string value)
         {
-            //this.value = Encoding.Unicode.GetBytes(value);
             this.value = Encoding.UTF8.GetBytes(value);
             type = 's';
         }
@@ -38,7 +37,6 @@ namespace nea_prototype
         public override string ToString()
         {
             if (type != 's') throw new Exception("Value cannot be cast to this type");
-            //return Encoding.Unicode.GetString(value); THIS IS A DIFFERENT CHARACTER SET AND iS NOT COMPATIBLE WITH ASCII
             return Encoding.UTF8.GetString(value);
         }
     }
