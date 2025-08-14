@@ -144,18 +144,5 @@ namespace nea_prototype
         }
     }
 
-    public class Vigenere : ICipher
-    {
-        public string Encrypt(string plaintext, StrInt bKey)
-        {
-            string ciphertext = "";
-            return ciphertext;
-        }
-        public string Decrypt(string ciphertext, StrInt bKey)
-        {
-            string plaintext = "";
-            return plaintext;
-        }
-    }
 }
 
