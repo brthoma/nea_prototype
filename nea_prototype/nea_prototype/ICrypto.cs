@@ -21,4 +21,26 @@ namespace nea_prototype
             }
         }
     }
+
+    public class XORCycle : ICrypto
+    {
+        public IEnumerable<string> GetLikelyPlain(ICipher xorCipher, string ciphertext)
+        {
+            for (char c = 'A'; c <= 'Z'; c++)
+            {
+                yield return xorCipher.Decrypt(ciphertext, new StrInt(c.ToString()));
+            }
+        }
+    }
+
+    public class ROT47Cycle : ICrypto
+    {
+        public IEnumerable<string> GetLikelyPlain(ICipher rot47Cipher, string ciphertext)
+        {
+            for (int i = 0; 0 <= '~' - '!';  i++)
+            {
+                yield return rot47Cipher.Decrypt(ciphertext, new StrInt(i));
+            }
+        }
+    }
 }
