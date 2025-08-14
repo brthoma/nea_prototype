@@ -95,9 +95,6 @@ namespace nea_prototype
         }
         public string Decrypt(string ciphertext, StrInt bKey)
         {
-            //StrInt bEKey = new StrInt(bKey.ToInt() * -1);    Not really sure why this doesnt work but ok
-            StrInt bEKey = new StrInt((26 - bKey.ToInt()) % 26);
-            return Encrypt(ciphertext, bEKey);
             int key = bKey.ToInt();
             string plaintext = "";
             foreach (char c in ciphertext)
